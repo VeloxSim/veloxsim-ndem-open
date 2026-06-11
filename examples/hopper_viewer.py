@@ -1,21 +1,17 @@
-"""Interactive HTML viewer for hopper discharge results (ported from veloxsim-dem).
+"""Interactive HTML viewer for granular discharge / repose / chute results.
 
-Ported from veloxsim-dem-open/hopper_viewer.py. Same features (Solid /
-Velocity / Layers colour modes, centre clip-plane, axis gizmo, cinema
-mode), reading the same JSON schema demo_hopper.py emits
+Features: Solid / Velocity / Layers colour modes, centre clip-plane, axis
+gizmo, cinema mode. Reads the JSON schema the demos emit
 (``config`` / ``frames``[``t,n,pos,vel``] / ``stl``).
 
-KEY DIFFERENCE from the DEM original: this build is **self-contained and
-works by double-clicking the HTML (file://)**. The DEM viewer loads
-Three.js as an ES module from a CDN (``<script type="module"> import …
-from 'https://…'``), which browsers block over ``file://`` ("'file:' URLs
-are treated as unique security origins") — the page freezes. Here we
-**inline a classic (UMD) Three.js r0.147 build + OrbitControls** from
-``_vendor/`` as plain ``<script>`` blocks (global ``THREE`` /
-``THREE.OrbitControls``); no modules, no importmap, no network.
+The page is **self-contained and works by double-clicking the HTML
+(file://)**: it inlines a classic (UMD) Three.js r0.147 build +
+OrbitControls from ``_vendor/`` as plain ``<script>`` blocks (global
+``THREE`` / ``THREE.OrbitControls``) — no ES modules, no importmap, no
+network, so browsers don't block it as a ``file://`` security origin.
 
 Usage:
-    python hopper_viewer.py --results hopper_results.json --output viewer.html
+    python hopper_viewer.py --results results.json --output viewer.html
 """
 from __future__ import annotations
 
@@ -45,7 +41,7 @@ def _read_vendor(name: str) -> str:
 def generate_hopper_html(
     results_path: str | pathlib.Path,
     output_path: str | pathlib.Path,
-    title: str = "VeloxSim Hopper (XPBD)",
+    title: str = "VeloxSim NDEM",
     max_anim_frames: int = 200,
     max_particles_per_frame: int = 30_000,
 ) -> pathlib.Path:
@@ -509,7 +505,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Self-contained (file://-safe) hopper discharge viewer")
     parser.add_argument("--results", required=True, help="Path to hopper_results.json")
     parser.add_argument("--output", required=True, help="Output HTML file path")
-    parser.add_argument("--title", default="VeloxSim Hopper (XPBD)", help="Page title")
+    parser.add_argument("--title", default="VeloxSim NDEM", help="Page title")
     parser.add_argument("--max-frames", type=int, default=200)
     parser.add_argument("--max-particles", type=int, default=30_000)
     args = parser.parse_args()

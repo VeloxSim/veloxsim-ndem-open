@@ -1,15 +1,11 @@
-"""GranularDEM hopper-discharge demo — A/B against granular_xpbd's hopper.
+"""Hopper-discharge demo for the non-smooth DEM solver.
 
-Loads the same Hopper2.stl as the XPBD demo, reuses a pre-settled
-packed_positions.npy (so we skip the settle phase and focus on what we
-care about — discharge dynamics with the faithful contact-solver), runs the
-discharge, records frames in the same JSON format as the XPBD demo so
-the existing hopper_viewer.py renders both runs identically.
+Loads Hopper2.stl and a pre-settled particle bed (generate one with
+``data/make_hopper_packing.py``), opens the outlet, and records the
+discharge as JSON for ``hopper_viewer.py``.
 
-Defaults mirror the XPBD `n5k_pp_fix` run for direct comparison:
-    --packed examples/granular_xpbd/results/n5k_pp_fix/packed_positions.npy
-    --n-particles 5000  --substeps 4  --contact-iterations 16
-    --sim-time 15.0     --dt 2e-3
+    python examples/data/make_hopper_packing.py   # one-time, makes the bed
+    python examples/demo_hopper.py                # run the discharge
 """
 
 from __future__ import annotations
@@ -29,7 +25,7 @@ from newton import ParticleFlags
 _HERE = Path(__file__).resolve().parent
 _REPO_ROOT = _HERE.parent.parent
 
-# Reuse the XPBD demo's STL utilities; they're solver-agnostic.
+# STL utilities (solver-agnostic).
 sys.path.insert(0, str(_HERE))
 import _stl_utils as su  # noqa: E402
 
@@ -40,7 +36,7 @@ from veloxsim_ndem import (  # noqa: E402
 
 
 # ----------------------------------------------------------------------
-# Model construction (clone of the XPBD demo's build_model, no XPBD-isms)
+# Model construction
 
 def build_model(device, hverts, hfaces, mu, radius, mass, positions, n_active,
                 max_velocity=5.0):
@@ -197,7 +193,7 @@ def run_discharge(args, device, hverts, hfaces, lo, hi, packed):
 
 
 def write_results(args, hverts, hfaces, frames, stats, out_dir):
-    """Same JSON format as the XPBD demo so hopper_viewer.py works."""
+    """JSON consumed by hopper_viewer.py."""
     stl_block = {
         "hopper": {
             "v": np.round(hverts, 4).tolist(),
@@ -248,7 +244,7 @@ def main():
     p.add_argument("--packing-fraction", type=float, default=0.55)
     p.add_argument("--bulk-density", type=float, default=2000.0)
     # mu=0.5 / mu_rolling=0.15 gives 100% discharge AND a calm catch pile
-    # (max|v|=1.0 m/s vs XPBD's 4.0 m/s, zero pegged grains, p99=41 mm/s).
+    # (max|v|=1.0 m/s, zero pegged grains, p99=41 mm/s).
     # mu=0.7 also gives a calm catch pile but discharge drops to ~58% (arching).
     p.add_argument("--mu", type=float, default=0.5)
     p.add_argument("--mu-rolling", type=float, default=0.15)
@@ -304,9 +300,11 @@ def main():
     frames, stats = run_discharge(args, device, hverts, hfaces, lo, hi, packed)
     out_path = write_results(args, hverts, hfaces, frames, stats, out_dir)
 
-    print("\nDone. Generate the viewer with:\n"
-          f"  python {_HERE / 'hopper_viewer.py'} "
-          f"--results {out_path} --output {out_dir / 'index.html'}")
+    out_html = out_dir / "index.html"
+    from hopper_viewer import generate_hopper_html
+    generate_hopper_html(out_path, out_html,
+                         title="VeloxSim NDEM - Hopper Discharge")
+    print(f"\nDone. Viewer: {out_html}")
 
 
 if __name__ == "__main__":

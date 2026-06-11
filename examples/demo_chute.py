@@ -1,41 +1,36 @@
-"""GranularDEM transfer-chute demo -- mirrors the public veloxsim-dem-open
-``examples/chute/test_stl_chute.py`` with our contact solver.
+"""Transfer-chute demo for the non-smooth DEM solver.
 
-Scene (same 7 STLs, mm scaled to m via 0.001; coordinates identical to the
-public test): an ~11 m feed belt inclined at ~5.84 deg (FEED_SLOPE=0.1023)
-carries material in +x to the head pulley at x=0; the stream hits the
-impact plate, drops ~3 m through the lower chute onto the receive belt
-(running +y at belt speed), with skirts/top-skirts for containment.
-``inlet.stl`` is VIRTUAL: only its bounding box is used as the particle
-spawn region (no collision), exactly like the public test.
+Scene (7 STLs, mm scaled to m via 0.001): an ~11 m feed belt inclined at
+~5.84 deg (FEED_SLOPE=0.1023) carries material in +x to the head pulley at
+x=0; the stream hits the impact plate, drops ~3 m through the lower chute
+onto the receive belt (running +y at belt speed), with skirts / top-skirts
+for containment. ``inlet.stl`` is VIRTUAL: only its bounding box is used as
+the particle spawn region (no collision).
 
-Moving surfaces use the per-shape surface-velocity port of the public
-engine's ``surface_velocity`` kwarg (``solver.set_shape_surface_velocity``):
-the belt meshes stay geometrically static while their surfaces drag
-particles through the friction cone.
+Moving surfaces use per-shape surface velocity
+(``solver.set_shape_surface_velocity``): the belt meshes stay geometrically
+static while their surfaces drag particles through the friction cone.
 
-Streaming insertion mirrors the public recipe: grid layers over the inlet
-bbox at SPACING = 2R*1.05 pitch, at a rate derived from the tonnage
-(mass_flow/BULK_DENSITY*PACKING/V_particle). Particles park inactive far
-outside the domain and are activated layer by layer; particles leaving the
-domain bbox (+1 m margin) are deactivated and re-parked.
+Streaming insertion: grid layers over the inlet bbox at SPACING = 2R*1.05
+pitch, at a rate derived from the tonnage
+(mass_flow / BULK_DENSITY * PACKING / V_particle). Particles park inactive
+far outside the domain and are activated layer by layer; particles leaving
+the domain bbox (+1 m margin) are deactivated and re-parked.
 
-Material mirrors the public chute config where our model supports it:
-solid density 3333 (bulk 2000 / packing 0.6), mu=0.8 (their dynamic
-friction; their static 0.95 is not expressible with a single Coulomb mu),
-Type-C EPSD rolling mu_r=0.25 with E=5e6/nu=0.3, global damping 1.0/s on
-v and omega. ACKNOWLEDGED SHORTFALLS vs the public engine: no JKR cohesion
-(theirs: 8.0 J/m^2), restitution 0 (theirs: 0.4; the NCP is inelastic by
-construction).
+Material: solid density 3333 (bulk 2000 / packing 0.6), mu=0.8, Type-C EPSD
+rolling mu_r=0.25 with E=5e6 / nu=0.3, global damping 1.0/s on v and omega.
+The contact model is friction-only (no cohesion) and inelastic (restitution
+0 by construction).
 
-dt: ours is kinematics-bounded -> 5e-4 s default (max speed ~10 m/s in the
-3 m drop -> 5 mm/step, ~0.2 R). The public engine needs dt=1e-5 (stiffness
--bounded Hertz) -- the usual 50x step advantage.
+dt is kinematics-bounded -> 5e-4 s default (max speed ~10 m/s in the 3 m
+drop -> 5 mm/step, ~0.2 R), far larger than a stiffness-bounded
+spring-dashpot DEM step.
 
 Usage::
 
-    python demo_chute.py                       # full public spec: 3000 tph, 10 s
-    python demo_chute.py --tonnage 600 --sim-time 3   # smoke test
+    python demo_chute.py                              # 3000 tph, 10 s
+    python demo_chute.py --tonnage 600 --sim-time 3  # smoke test
+    python demo_chute.py --live --stl-opacity 0.35   # live OpenGL view
 """
 
 from __future__ import annotations
@@ -64,10 +59,10 @@ from veloxsim_ndem import (  # noqa: E402
 )
 
 STL_DIR = _HERE / "STL" / "chute"
-STL_SCALE = 0.001                     # mm -> m (public test convention)
+STL_SCALE = 0.001                     # mm -> m
 G = 9.81
 
-# Public test constants (verbatim where applicable).
+# Scene constants.
 FEED_SLOPE = 0.1023                   # dZ/dX of the feed belt (~5.84 deg)
 BULK_DENSITY = 2000.0                 # kg/m^3
 PACKING_FRACTION = 0.6
@@ -369,29 +364,29 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--tonnage", type=float, default=3000.0,
-                   help="Throughput in tph (public test: 3000).")
+                   help="Throughput in tph (default 3000).")
     p.add_argument("--belt-speed", type=float, default=3.0,
-                   help="Feed + receive belt speed (m/s; public: 3.0).")
+                   help="Feed + receive belt speed (m/s; default 3.0).")
     p.add_argument("--radius", type=float, default=0.0225,
-                   help="Particle radius (public: 22.5 mm).")
+                   help="Particle radius (22.5 mm).")
     p.add_argument("--sim-time", type=float, default=10.0)
     p.add_argument("--max-particles", type=int, default=60000)
     p.add_argument("--dt", type=float, default=5.0e-4,
-                   help="contact-solver outer step (kinematics-bounded; public Hertz "
-                        "engine needs 1e-5).")
+                   help="contact-solver outer step (kinematics-bounded; far "
+                        "larger than a stiffness-bounded spring-dashpot DEM).")
     p.add_argument("--contact-iterations", type=int, default=5)
     p.add_argument("--collide-every", type=int, default=2,
                    help="Narrowphase cadence. 2 (1 ms) keeps stale-contact "
                         "windows small for the ~10 m/s drop impacts.")
     p.add_argument("--mu", type=float, default=0.8,
-                   help="Coulomb friction (public dynamic friction 0.80).")
+                   help="Coulomb friction (dynamic friction ~0.80).")
     p.add_argument("--mu-rolling", type=float, default=0.25,
-                   help="Type-C EPSD rolling friction (public: 0.25).")
+                   help="Type-C EPSD rolling friction (0.25).")
     p.add_argument("--no-rotation", action="store_true",
                    help="Disable particle rotation (translational contact-solver).")
     p.add_argument("--global-damping", type=float, default=1.0,
                    help="Viscous damping rate 1/s on v and omega "
-                        "(public SimConfig global_damping=1.0).")
+                        "(global_damping=1.0).")
     p.add_argument("--record-hz", type=float, default=25.0)
     p.add_argument("--live", action="store_true",
                    help="Open a real-time OpenGL window (CUDA-GL interop; "
@@ -411,7 +406,7 @@ def main():
                         "(early in the run the sparse scene simulates faster "
                         "than 1x; pacing sleeps so sim time tracks the clock).")
     p.add_argument("--delete-every", type=int, default=100,
-                   help="Domain-exit deletion cadence in steps (public: 50 ms).")
+                   help="Domain-exit deletion cadence in steps (~50 ms).")
     p.add_argument("--out-dir", type=Path, default=_HERE / "results" / "chute")
     p.add_argument("--device", type=str, default=None)
     args = p.parse_args()
@@ -436,7 +431,7 @@ def main():
     print(f"domain bbox (with 1 m margin): {np.round(dom_lo, 2)} .. {np.round(dom_hi, 2)}")
     print(f"inlet bbox: {np.round(inlet_lo, 2)} .. {np.round(inlet_hi, 2)}")
 
-    # ---- insertion schedule (public recipe) ------------------------------
+    # ---- insertion schedule ------------------------------
     spacing = 2.0 * R * 1.05
     mass_flow = args.tonnage * 1000.0 / 3600.0            # kg/s
     bulk_vol_rate = mass_flow / BULK_DENSITY              # m^3/s
@@ -478,19 +473,19 @@ def main():
         mu=args.mu,                          # mesh_mu defaults to mu
         contact_iterations=args.contact_iterations,
         substeps=1,
-        gamma_v=0.0,                         # public uses ONLY global damping
+        gamma_v=0.0,                         # global damping only
         linear_damping=args.global_damping,
         angular_damping=args.global_damping,
         enable_rotation=rotation,
         mu_rolling=args.mu_rolling if rotation else 0.0,
-        young_modulus=5.0e6,                 # public chute SimConfig
+        young_modulus=5.0e6,
         poisson_ratio=0.3,
         max_contacts_per_particle=24,
         dt=dt,
     )
     solver = GranularDEMSolver(model, material)
 
-    # Belts: in-plane surface translation (public surface_velocity kwarg).
+    # Belts: in-plane surface translation (per-shape surface velocity).
     feed_angle = math.atan(FEED_SLOPE)
     feed_v = (BELT * math.cos(feed_angle), 0.0, BELT * math.sin(feed_angle))
     solver.set_shape_surface_velocity(FEED_SHAPE, feed_v)
@@ -502,8 +497,8 @@ def main():
                if rotation else "rotation OFF")
     print(f"{rot_str}  mu={args.mu}  damping={args.global_damping}/s  "
           f"dt={dt*1000:.2f}ms  contact_iters={args.contact_iterations}")
-    print("shortfalls vs public engine: no JKR cohesion (theirs 8.0 J/m^2), "
-          "restitution 0 (theirs 0.4), single mu (theirs 0.95 static / 0.80 dyn)")
+    print("contact model: friction-only (no cohesion), inelastic "
+          "(restitution 0 by construction), single Coulomb mu")
 
     # ---- host-side particle bookkeeping ----------------------------------
     flags_np = np.zeros(args.max_particles, dtype=np.int32)    # all parked
@@ -559,7 +554,7 @@ def main():
     t0 = time.perf_counter()
     for step in range(steps):
         # --- streaming insertion (activate one inlet layer) --------------
-        # Slot RECYCLING (public-engine behaviour): exited slots return to
+        # Slot RECYCLING: exited slots return to
         # a free pool and are reused, so insertion continues indefinitely;
         # --max-particles bounds the CONCURRENT count, not the total.
         if step % insert_every == 0:
@@ -688,7 +683,7 @@ def main():
     wall = time.perf_counter() - t0
     rt = args.sim_time / wall if wall > 0 else 0.0
 
-    # ---- end-of-run sanity metrics (public test's checks) -----------------
+    # ---- end-of-run sanity metrics -----------------
     active = (flags_np & int(ParticleFlags.ACTIVE)) != 0
     pos = s0.particle_q.numpy()
     vel = s0.particle_qd.numpy()
@@ -738,7 +733,7 @@ def main():
             "tonnage_tph": args.tonnage, "belt_speed": BELT,
             "mu": args.mu, "rotation": rotation, "rolling": args.mu_rolling,
             "global_damping": args.global_damping,
-            "cohesion": 0.0,                  # unmodelled (public: 8.0 J/m^2)
+            "cohesion": 0.0,                  # not modelled
             "sim_time": args.sim_time, "realtime_factor": rt,
             "inserted": int(inserted_total), "deleted": int(n_deleted),
             "exit_y_belt_end": int(n_exit_y), "exit_z_fell_through": int(n_exit_z),
@@ -752,8 +747,10 @@ def main():
     out_json.write_text(json.dumps(export, separators=(",", ":")))
     print(f"Results: {out_json} ({out_json.stat().st_size/1024/1024:.1f} MB, "
           f"{len(frames)} frames)")
-    print(f"Viewer:  python {_HERE/'hopper_viewer.py'} "
-          f"--results {out_json} --output {args.out_dir/'index.html'}")
+    out_html = args.out_dir / "index.html"
+    from hopper_viewer import generate_hopper_html
+    generate_hopper_html(out_json, out_html, title="VeloxSim NDEM - Transfer Chute")
+    print(f"Viewer:  {out_html}")
 
 
 if __name__ == "__main__":
