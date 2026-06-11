@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veloxsim-ndem"
+version = "0.1.0"
+description = "Near-real-time granular DEM — a projected-impulse NCP contact solver on NVIDIA Warp + Newton"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "warp-lang>=1.1.0",
+    "newton",            # NVIDIA Newton physics engine (Model/State/contacts, SolverBase)
+    "numpy>=1.24",
+    "trimesh>=4.0",      # STL import + SDF build for the examples
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+viz = ["scipy>=1.10"]    # optional: kd-tree dedup in the HTML viewer
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not slow'"
+markers = [
+    "slow: long-running tests (multi-seed sweeps, large scenes); deselect with '-m \"not slow\"'",
+]

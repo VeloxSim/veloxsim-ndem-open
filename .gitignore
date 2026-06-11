@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Generated demo outputs (HTML viewers + JSON traces; can be large)
+examples/results/
