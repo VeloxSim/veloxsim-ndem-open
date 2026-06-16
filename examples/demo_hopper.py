@@ -78,6 +78,9 @@ def run_discharge(args, device, hverts, hfaces, lo, hi, packed):
         density=args.solid_density,
         mu=args.mu,
         mu_rolling=args.mu_rolling,
+        enable_rotation=not args.no_rotation,   # Type-C EPSD rolling friction
+        young_modulus=1.0e7,
+        poisson_ratio=0.3,
         contact_iterations=args.contact_iterations,
         substeps=args.substeps,
         baumgarte_alpha=args.baumgarte_alpha,
@@ -202,7 +205,7 @@ def write_results(args, hverts, hfaces, frames, stats, out_dir):
     }
     export = {
         "config": {
-            "solver": "granular_dem",
+            "solver": "veloxsim_ndem",
             "radius": args.radius,
             "n_particles": stats["n0"],
             "solid_density": args.solid_density,
@@ -214,6 +217,7 @@ def write_results(args, hverts, hfaces, frames, stats, out_dir):
             "inner_iters": args.contact_iterations,            # viewer reuses this label
             "friction_static": args.mu,
             "friction_rolling": args.mu_rolling,
+            "rotation": not args.no_rotation,
             "cohesion": 0.0,
             "cohesion_wall": None,
             "up_axis": "z",
@@ -243,11 +247,14 @@ def main():
     p.add_argument("--n-particles", type=int, default=5000)
     p.add_argument("--packing-fraction", type=float, default=0.55)
     p.add_argument("--bulk-density", type=float, default=2000.0)
-    # mu=0.5 / mu_rolling=0.15 gives 100% discharge AND a calm catch pile
-    # (max|v|=1.0 m/s, zero pegged grains, p99=41 mm/s).
-    # mu=0.7 also gives a calm catch pile but discharge drops to ~58% (arching).
+    # mu=0.5 with Type-C rolling (mu_rolling=0.15) discharges through the neck
+    # with a calm catch pile. Higher mu raises arching risk (mu=0.7 can drop
+    # discharge); pass --no-rotation to fall back to the translational model.
     p.add_argument("--mu", type=float, default=0.5)
     p.add_argument("--mu-rolling", type=float, default=0.15)
+    p.add_argument("--no-rotation", action="store_true",
+                   help="Disable particle rotation + Type-C EPSD rolling "
+                        "friction (rotation is ON by default).")
     # Defaults are tuned for hopper-discharge dynamics: dt=1e-3, no
     # substeps, contact_iterations=5 to keep 100 % discharge through the
     # neck, and velocity_damping=0.0 — softening contacts over-damps the
