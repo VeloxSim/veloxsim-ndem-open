@@ -2,7 +2,7 @@
 
 Loads Hopper2.stl and a pre-settled particle bed (generate one with
 ``data/make_hopper_packing.py``), opens the outlet, and records the
-discharge as JSON for ``hopper_viewer.py``.
+discharge as JSON for ``viewer.py``.
 
     python examples/data/make_hopper_packing.py   # one-time, makes the bed
     python examples/demo_hopper.py                # run the discharge
@@ -196,7 +196,7 @@ def run_discharge(args, device, hverts, hfaces, lo, hi, packed):
 
 
 def write_results(args, hverts, hfaces, frames, stats, out_dir):
-    """JSON consumed by hopper_viewer.py."""
+    """JSON consumed by viewer.py."""
     stl_block = {
         "hopper": {
             "v": np.round(hverts, 4).tolist(),
@@ -308,7 +308,7 @@ def main():
     out_path = write_results(args, hverts, hfaces, frames, stats, out_dir)
 
     out_html = out_dir / "index.html"
-    from hopper_viewer import generate_hopper_html
+    from viewer import generate_hopper_html
     generate_hopper_html(out_path, out_html,
                          title="VeloxSim NDEM - Hopper Discharge")
     print(f"\nDone. Viewer: {out_html}")

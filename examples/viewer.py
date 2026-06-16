@@ -11,7 +11,7 @@ OrbitControls from ``_vendor/`` as plain ``<script>`` blocks (global
 network, so browsers don't block it as a ``file://`` security origin.
 
 Usage:
-    python hopper_viewer.py --results results.json --output viewer.html
+    python viewer.py --results results.json --output viewer.html
 """
 from __future__ import annotations
 

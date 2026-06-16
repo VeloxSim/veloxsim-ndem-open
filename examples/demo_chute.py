@@ -748,7 +748,7 @@ def main():
     print(f"Results: {out_json} ({out_json.stat().st_size/1024/1024:.1f} MB, "
           f"{len(frames)} frames)")
     out_html = args.out_dir / "index.html"
-    from hopper_viewer import generate_hopper_html
+    from viewer import generate_hopper_html
     generate_hopper_html(out_json, out_html, title="VeloxSim NDEM - Transfer Chute")
     print(f"Viewer:  {out_html}")
 

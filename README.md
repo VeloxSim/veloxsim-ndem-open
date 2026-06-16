@@ -53,7 +53,7 @@ for _ in range(n_steps):
 ## Examples
 
 Each demo writes a JSON trace; turn it into a standalone, offline HTML viewer
-with `examples/hopper_viewer.py` (the exact command is printed at the end of
+with `examples/viewer.py` (the exact command is printed at the end of
 each run).
 
 ```bash

@@ -351,7 +351,7 @@ def run_case(args, device, case_name, cyl_verts, cyl_faces):
             "substeps": 1, "baumgarte_alpha": 0.02,
             "mesh_baumgarte_alpha": 0.005, "gamma_v": args.gamma_v,
         },
-        # hopper_viewer renders the "stl" block as the container mesh.
+        # viewer renders the "stl" block as the container mesh.
         "stl": {"hopper": {"v": np.round(cyl_verts, 4).tolist(),
                            "f": cyl_faces.reshape(-1).astype(int).tolist()}},
         "frames": frames,
@@ -361,7 +361,7 @@ def run_case(args, device, case_name, cyl_verts, cyl_faces):
     print(f"  Results: {out_json} ({out_json.stat().st_size/1024/1024:.1f} MB, "
           f"{len(frames)} frames)")
     out_html = out_dir / "index.html"
-    from hopper_viewer import generate_hopper_html
+    from viewer import generate_hopper_html
     generate_hopper_html(out_json, out_html,
                          title=f"VeloxSim NDEM - Angle of Repose ({case_name})")
     print(f"  Viewer:  {out_html}")

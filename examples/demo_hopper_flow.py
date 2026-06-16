@@ -32,7 +32,7 @@ from newton import ParticleFlags
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 import _stl_utils as su  # noqa: E402
-from hopper_viewer import generate_hopper_html  # noqa: E402
+from viewer import generate_hopper_html  # noqa: E402
 
 from veloxsim_ndem import GranularDEMMaterial, GranularDEMSolver  # noqa: E402
 
