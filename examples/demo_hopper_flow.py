@@ -6,8 +6,10 @@ DELETED once they pass ``--delete-drop`` metres below the outlet, so the active
 set shrinks as the hopper empties and memory stays bounded (the same domain-exit
 pattern the chute demo uses for its continuous stream).
 
-At 60k particles, recording every grain would produce a ~1 GB JSON, so the
-recorder writes a subsample (``--record-max``) per frame — plenty for the viewer.
+The "exit" is a horizontal plane ``--delete-drop`` metres below the outlet: a
+grain is deleted the moment it falls past it, so the stream leaves the opening
+and disappears at the exit rather than piling up. Every active grain is
+recorded each frame (no subsampling), so the output JSON / viewer are large.
 
 One-time: generate the packing, then run::
 
@@ -69,12 +71,9 @@ def main():
     ap.add_argument("--dt", type=float, default=1e-3)
     ap.add_argument("--collide-every", type=int, default=4)
     ap.add_argument("--sim-time", type=float, default=8.0)
-    ap.add_argument("--delete-drop", type=float, default=0.5,
-                    help="Delete a discharged grain once it falls this many metres "
-                         "below the outlet (there is no catch surface).")
-    ap.add_argument("--record-max", type=int, default=25000,
-                    help="Max particles written per recorded frame (subsampled) so "
-                         "the JSON / viewer stay manageable at 60k.")
+    ap.add_argument("--delete-drop", type=float, default=0.15,
+                    help="Exit plane: a grain is deleted once it falls this many "
+                         "metres past the outlet (there is no catch surface).")
     ap.add_argument("--record-hz", type=float, default=20.0)
     ap.add_argument("--out-dir", type=Path, default=_HERE / "results" / "hopper_flow_60k")
     ap.add_argument("--device", type=str, default=None)
@@ -112,7 +111,7 @@ def main():
     dt = args.dt
     steps = int(args.sim_time / dt)
     record_every = max(1, int(1.0 / (args.record_hz * dt)))
-    delete_every = max(1, int(0.02 / dt))
+    delete_every = max(1, int(0.01 / dt))
     report_every = max(1, steps // 20)
     collide_every = max(1, args.collide_every)
     flags_np = model.particle_flags.numpy()
@@ -146,14 +145,11 @@ def main():
             pos = s0.particle_q.numpy()
             vel = s0.particle_qd.numpy()
             act = (flags_np & int(ParticleFlags.ACTIVE)) != 0
-            idx = np.nonzero(act)[0]
-            if len(idx) > args.record_max:                  # uniform stride subsample
-                idx = idx[:: (len(idx) // args.record_max + 1)]
             frames.append({
                 "t": round(step * dt, 6),
                 "n": int(act.sum()),
-                "pos": np.round(pos[idx], 4).tolist(),
-                "vel": np.round(vel[idx], 4).tolist(),
+                "pos": np.round(pos[act], 4).tolist(),    # every active grain (no subsample)
+                "vel": np.round(vel[act], 4).tolist(),
             })
 
         if step % report_every == 0:
@@ -179,7 +175,7 @@ def main():
             "solver": "veloxsim_ndem", "scene": "hopper_flow",
             "radius": radius, "n_particles": n0, "solid_density": args.density,
             "dt": dt, "sim_time": args.sim_time, "rotation": not args.no_rotation,
-            "delete_drop": args.delete_drop, "record_max": args.record_max,
+            "delete_drop": args.delete_drop,
             "friction_static": args.mu, "friction_rolling": args.mu_rolling,
             "discharged_deleted": n_deleted, "realtime_factor": rt, "up_axis": "z",
         },
@@ -192,7 +188,8 @@ def main():
     print(f"Results: {out_json} ({out_json.stat().st_size / 1024 / 1024:.1f} MB, "
           f"{len(frames)} frames)")
     out_html = args.out_dir / "index.html"
-    generate_hopper_html(out_json, out_html, title="VeloxSim NDEM - Hopper Flow (60k)")
+    generate_hopper_html(out_json, out_html, title="VeloxSim NDEM - Hopper Flow (60k)",
+                         max_particles_per_frame=n0)   # render every recorded grain
     print(f"Viewer:  {out_html}")
 
 
