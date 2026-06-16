@@ -64,6 +64,10 @@ python examples/demo_repose.py --both --rotation
 python examples/data/make_hopper_packing.py
 python examples/demo_hopper.py
 
+# Hopper flow-through at scale — 60k grains drain with no catch surface;
+# discharged grains free-fall and are deleted below the outlet
+python examples/demo_hopper_flow.py
+
 # Transfer chute — streaming insertion + conveyor belts, with a live OpenGL view
 python examples/demo_chute.py --live --stl-opacity 0.35
 ```
