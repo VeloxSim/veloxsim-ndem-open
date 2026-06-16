@@ -38,6 +38,31 @@ from viewer import generate_hopper_html  # noqa: E402
 
 from veloxsim_ndem import GranularDEMMaterial, GranularDEMSolver  # noqa: E402
 
+_ACTIVE = wp.constant(wp.int32(int(ParticleFlags.ACTIVE)))
+
+
+@wp.kernel
+def park_exited(q: wp.array(dtype=wp.vec3),
+                qd: wp.array(dtype=wp.vec3),
+                flags: wp.array(dtype=wp.int32),
+                delete_z: float,
+                park_z: float,
+                ndel: wp.array(dtype=wp.int32)):
+    """Delete any active grain that has fallen past the exit plane.
+
+    The grain is deactivated AND teleported far away (spread by index so the
+    parked grains don't all pile into one broadphase cell). Leaving a deleted
+    grain in place is the bug behind the 'collected at the bottom' look: the
+    solver treats inactive grains as static collision neighbours, so they form
+    a floor the live stream piles up on. Moving them out of the domain removes
+    that floor — grains simply vanish at the exit."""
+    i = wp.tid()
+    if (flags[i] & _ACTIVE) != 0 and q[i][2] < delete_z:
+        flags[i] = flags[i] & (~_ACTIVE)
+        q[i] = wp.vec3(float(i) * 0.1, 0.0, park_z)
+        qd[i] = wp.vec3(0.0, 0.0, 0.0)
+        wp.atomic_add(ndel, 0, 1)
+
 
 def build_model(device, hverts, hfaces, mu, radius, mass, positions, max_velocity=5.0):
     """Hopper mesh only (no catch surface) + the packed particle bed."""
@@ -111,16 +136,16 @@ def main():
     dt = args.dt
     steps = int(args.sim_time / dt)
     record_every = max(1, int(1.0 / (args.record_hz * dt)))
-    delete_every = max(1, int(0.01 / dt))
     report_every = max(1, steps // 20)
     collide_every = max(1, args.collide_every)
-    flags_np = model.particle_flags.numpy()
+    PARK_Z = -1.0e6                        # sentinel: well outside the domain
+    ACTIVE = int(ParticleFlags.ACTIVE)
+    ndel = wp.zeros(1, dtype=wp.int32, device=device)
 
     frames = []
-    n_deleted = 0
     t0 = time.perf_counter()
-    print(f"flow-through: no catch surface; grains deleted below z={delete_z:.3f} m "
-          f"(outlet z={outlet_z:.3f} m, drop {args.delete_drop} m)")
+    print(f"exit plane at z={delete_z:.3f} m (outlet z={outlet_z:.3f} m, drop "
+          f"{args.delete_drop} m) — grains are deleted at the exit, never caught.")
     print(f"dt={dt:.2e}s  steps={steps}  rotation={'OFF' if args.no_rotation else 'ON'}")
 
     for step in range(1, steps + 1):
@@ -128,23 +153,17 @@ def main():
             model.collide(s0, contacts)
         solver.step(s0, s1, None, contacts, dt)
         s0, s1 = s1, s0
-
-        if step % delete_every == 0:
-            wp.synchronize()
-            pos = s0.particle_q.numpy()
-            act = (flags_np & int(ParticleFlags.ACTIVE)) != 0
-            below = act & (pos[:, 2] < delete_z)
-            nb = int(below.sum())
-            if nb:
-                flags_np[below] &= ~int(ParticleFlags.ACTIVE)
-                model.particle_flags.assign(flags_np)
-                n_deleted += nb
+        # Delete past the exit EVERY step, on-device — parking grains far away
+        # so no 'deleted' grain is left behind to act as a static floor.
+        wp.launch(park_exited, dim=n0,
+                  inputs=[s0.particle_q, s0.particle_qd, model.particle_flags,
+                          delete_z, PARK_Z, ndel], device=device)
 
         if step % record_every == 0:
             wp.synchronize()
             pos = s0.particle_q.numpy()
             vel = s0.particle_qd.numpy()
-            act = (flags_np & int(ParticleFlags.ACTIVE)) != 0
+            act = (model.particle_flags.numpy() & ACTIVE) != 0
             frames.append({
                 "t": round(step * dt, 6),
                 "n": int(act.sum()),
@@ -155,18 +174,20 @@ def main():
         if step % report_every == 0:
             wp.synchronize()
             pos = s0.particle_q.numpy()
-            act = (flags_np & int(ParticleFlags.ACTIVE)) != 0
+            act = (model.particle_flags.numpy() & ACTIVE) != 0
             n_act = int(act.sum())
             in_hopper = int((act & (pos[:, 2] >= outlet_z)).sum())
+            n_deleted = int(ndel.numpy()[0])
             el = time.perf_counter() - t0
             print(f"  {100 * step // steps:3d}%  t={step * dt:5.2f}s  active={n_act:>6}  "
-                  f"in_hopper={in_hopper:>6}  discharged+deleted={n_deleted:>6}  ({el:.0f}s wall)")
+                  f"in_hopper={in_hopper:>6}  exited+deleted={n_deleted:>6}  ({el:.0f}s wall)")
 
     wall = time.perf_counter() - t0
     rt = args.sim_time / wall if wall > 0 else 0.0
     wp.synchronize()
-    act = (flags_np & int(ParticleFlags.ACTIVE)) != 0
-    print(f"\nDone: {n_deleted}/{n0} grains discharged + deleted; {int(act.sum())} still "
+    n_act = int(((model.particle_flags.numpy() & ACTIVE) != 0).sum())
+    n_deleted = int(ndel.numpy()[0])
+    print(f"\nDone: {n_deleted}/{n0} grains exited + deleted; {n_act} still "
           f"active. realtime {rt:.2f}x  (sim {args.sim_time}s / wall {wall:.0f}s)")
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
