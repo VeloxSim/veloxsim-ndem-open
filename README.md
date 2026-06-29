@@ -80,7 +80,7 @@ python -m pytest tests/
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+BSL License 1.1 — see [LICENSE](LICENSE).
 
 ## Acknowledgements
 
