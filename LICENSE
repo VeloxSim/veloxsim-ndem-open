@@ -7,99 +7,87 @@ Licensor:             VeloxSim Tech Pty Ltd
 Licensed Work:        VeloxSim DEM (the "Solver")
                       The Licensed Work is (c) 2026 VeloxSim Tech Pty Ltd.
 
-Additional Use Grant: You may use, modify, and distribute the Licensed Work for
-                      any purpose that is not a Competing Use.
+Additional Use Grant: You may use, modify, and distribute the Licensed Work foracademic research, non-commercial research, teaching,personal experimentation, evaluation,      
+                      benchmarking, andthe development or testing of non-production prototypes.
 
-                      A "Competing Use" means offering to third parties (whether
-                      free or for a fee) a product or service whose primary value
-                      is the granular/particle simulation or physics-solver
-                      functionality of the Licensed Work, or that substantially
-                      reproduces that functionality as a hosted or packaged
-                      simulation offering.
-
-                      For clarity, the following are NOT Competing Uses and are
-                      expressly permitted: (a) internal use within your
-                      organization, including research, engineering, design, and
-                      development; (b) developing, training, testing, or
-                      validating robotics, control, or machine-learning systems;
-                      (c) academic and non-commercial research and teaching; and
-                      (d) use of the Licensed Work as a component within a larger
-                      product or service whose primary value is not the
-                      simulation functionality itself.
+                      Use of the Licensed Work by or on behalf of a commercial
+                      organization for production purposes or internal
+                      commercial purposes is not permitted under this
+                      Additional Use Grant.
+    
+                      Without limiting the above, a separate commercial license
+                      is required for use of the Licensed Work by or on behalf
+                      of a commercial organization in:
+    
+                      (a) engineering, design, or operational workflows;
+    
+                      (b) commercial research and development;
+    
+                      (c) robotics, autonomous machine, or control-system
+                          development;
+    
+                      (d) artificial intelligence or machine-learning training,
+                          testing, validation, or data generation;
+    
+                      (e) simulation infrastructure, distributed simulation,
+                          cloud simulation, or high-throughput simulation;
+    
+                      (f) digital twins or machine-material interaction
+                          simulation; or
+    
+                      (g) any product, service, or internal software pipeline
+                          used in connection with a commercial activity.
+    
+                      A commercial license is required regardless of whether
+                      the Licensed Work is redistributed, made available to
+                      third parties, separately charged for, or used solely
+                      within the commercial organization's internal systems.
+    
+                      For clarity, evaluation and benchmarking by a commercial
+                      organization are permitted only for the purpose of
+                      determining whether to obtain a commercial license and
+                      must not form part of a production, operational, training,
+                      engineering, or commercial research workflow.
+    
+                      Any use not expressly permitted by this Additional Use
+                      Grant requires a separate commercial license from
+                      VeloxSim Tech Pty Ltd.
 
 Change Date:          2030-07-01
 
-Change License:       Apache License, Version 2.0
+Change License:        GNU General Public License, version 2 or any later version
 
 -----------------------------------------------------------------------------
-
 Terms
 
-The Licensor hereby grants you the right to copy, modify, create derivative
-works, redistribute, and make non-production use of the Licensed Work. The
-Licensor may make an Additional Use Grant, above, permitting limited
-production use.
+The Licensor hereby grants you the right to copy, modify, create derivativeworks, redistribute, and make non-production use of the Licensed Work. TheLicensor may make an Additional Use Grant, above, permitting limitedproduction use.
 
-Effective on the Change Date, or the fourth anniversary of the first publicly
-available distribution of a specific version of the Licensed Work under this
-License, whichever comes first, the Licensor hereby grants you rights under
-the terms of the Change License, and the rights granted in the paragraph above
-terminate.
+Effective on the Change Date, or the fourth anniversary of the first publiclyavailable distribution of a specific version of the Licensed Work under thisLicense, whichever comes first, the Licensor hereby grants you rights underthe terms of the Change License, and the rights granted in the paragraph aboveterminate.
 
-If your use of the Licensed Work does not comply with the requirements
-currently in effect as described in this License, you must purchase a
-commercial license from the Licensor, its affiliated entities, or authorized
-resellers, or you must refrain from using the Licensed Work.
+If your use of the Licensed Work does not comply with the requirementscurrently in effect as described in this License, you must purchase acommercial license from the Licensor, its affiliated entities, or authorizedresellers, or you must refrain from using the Licensed Work.
 
-All copies of the original and modified Licensed Work, and derivative works of
-the Licensed Work, are subject to this License. This License applies separately
-for each version of the Licensed Work and the Change Date may vary for each
-version of the Licensed Work released by Licensor.
+All copies of the original and modified Licensed Work, and derivative works ofthe Licensed Work, are subject to this License. This License applies separatelyfor each version of the Licensed Work and the Change Date may vary for eachversion of the Licensed Work released by Licensor.
 
-You must conspicuously display this License on each original or modified copy
-of the Licensed Work. If you receive the Licensed Work in original or modified
-form from a third party, the terms and conditions set forth in this License
-apply to your use of that work.
+You must conspicuously display this License on each original or modified copyof the Licensed Work. If you receive the Licensed Work in original or modifiedform from a third party, the terms and conditions set forth in this Licenseapply to your use of that work.
 
-Any use of the Licensed Work in violation of this License will automatically
-terminate your rights under this License for the current and all other versions
-of the Licensed Work.
+Any use of the Licensed Work in violation of this License will automaticallyterminate your rights under this License for the current and all other versionsof the Licensed Work.
 
-This License does not grant you any right in any trademark or logo of Licensor
-or its affiliates (provided that you may use a trademark or logo of Licensor as
-expressly required by this License).
+This License does not grant you any right in any trademark or logo of Licensoror its affiliates (provided that you may use a trademark or logo of Licensor asexpressly required by this License).
 
-TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED ON AN
-"AS IS" BASIS. LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS, EXPRESS
-OR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND TITLE.
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED ON AN"AS IS" BASIS. LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS, EXPRESSOR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND TITLE.
 
-MariaDB hereby grants you permission to use this License's text to license your
-works, and to refer to it using the trademark "Business Source License", as
-long as you comply with the Covenants of Licensor below.
+MariaDB hereby grants you permission to use this License's text to license yourworks, and to refer to it using the trademark "Business Source License", aslong as you comply with the Covenants of Licensor below.
 
 Covenants of Licensor
 
-In consideration of the right to use this License's text and the "Business
-Source License" name and trademark, Licensor covenants to MariaDB, and to all
-other recipients of the licensed work to be provided by Licensor:
+In consideration of the right to use this License's text and the "BusinessSource License" name and trademark, Licensor covenants to MariaDB, and to allother recipients of the licensed work to be provided by Licensor:
 
-1. To specify as the Change License the GPL Version 2.0 or any later version,
-   or a license that is compatible with GPL Version 2.0 or a later version,
-   where "compatible" means that software provided under the Change License can
-   be included in a program with software provided under GPL Version 2.0 or a
-   later version. Licensor may specify additional Change Licenses without
-   limitation.
+To specify as the Change License the GPL Version 2.0 or any later version,or a license that is compatible with GPL Version 2.0 or a later version,where "compatible" means that software provided under the Change License canbe included in a program with software provided under GPL Version 2.0 or alater version. Licensor may specify additional Change Licenses withoutlimitation.
 
-2. To either: (a) specify an additional grant of rights to use that does not
-   impose any additional restriction on the right granted in this License, as
-   the Additional Use Grant; or (b) insert the text "None" to specify a Change
-   Date.
+To either: (a) specify an additional grant of rights to use that does notimpose any additional restriction on the right granted in this License, asthe Additional Use Grant; or (b) insert the text "None" to specify a ChangeDate.
 
-3. To not modify this License in any other way.
+To not modify this License in any other way.
 
 Notice
 
-The Business Source License (this document, or the "License") is not an Open
-Source license. However, the Licensed Work will eventually be made available
-under an Open Source License, as stated in this License.
+The Business Source License (this document, or the "License") is not an OpenSource license. However, the Licensed Work will eventually be made availableunder an Open Source License, as stated in this License.
