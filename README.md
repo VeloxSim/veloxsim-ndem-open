@@ -4,13 +4,13 @@ Near-real-time **non-smooth DEM** (discrete element method) for granular media,
 on the GPU.
 
 `veloxsim-ndem` resolves grain contacts at the velocity/impulse level as a
-**nonlinear complementarity problem (NCP)** — the non-smooth contact-dynamics
-approach — rather than with penalty springs. An iterative projected-impulse
+**nonlinear complementarity problem (NCP)**, the non-smooth contact-dynamics
+approach, rather than with penalty springs. An iterative projected-impulse
 solver computes the impulse that cancels the closing normal velocity (inelastic
 by construction), with Baumgarte stabilisation and a Coulomb friction cone.
 Because the timestep is bounded by particle *kinematics* (no tunnelling) rather
 than contact *stiffness*, it runs at far larger steps than classical
-spring-dashpot DEM — tens of thousands of grains near real time.
+spring-dashpot DEM, tens of thousands of grains near real time.
 
 Built on [NVIDIA Warp](https://github.com/NVIDIA/warp) and
 [Newton](https://github.com/newton-physics/newton).
